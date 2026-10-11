@@ -1,0 +1,20 @@
+# Word documents and templates are excluded from publication.
+*.[dD][oO][cC]
+*.[dD][oO][cC][xXmM]
+*.[dD][oO][tT]
+*.[dD][oO][tT][xXmM]
+*.[wW][bB][kK]
+~$*
+
+# Local Python environments and caches.
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db

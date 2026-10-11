@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧社区养老互助系统养老互助任务调度及多方联动机制模块</title>
+    <title>制作人：162330318 丁俊泽</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --header-bg: #343a40;
+            --accent: #007bff;
+        }
+        body { background-color: var(--primary-bg); font-family: 'Segoe UI', Roboto, sans-serif; font-size: 0.9rem; }
+
+        .navbar-brand { font-weight: bold; letter-spacing: 1px; }
+        .sim-clock { font-family: 'Courier New', monospace; font-weight: bold; color: #ffc107; }
+
+        .dashboard-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            height: 100%;
+            border: none;
+        }
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            color: #495057;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 模块标签 */
+        .module-tag { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; background: #e9ecef; color: #666; }
+
+        /* 积分榜样式 */
+        .rank-list .list-group-item { border: none; border-bottom: 1px solid #f0f0f0; padding: 10px 15px; }
+        .rank-badge { width: 24px; height: 24px; text-align: center; line-height: 24px; border-radius: 50%; background: #eee; color: #666; font-size: 0.8rem; display: inline-block; margin-right: 10px; }
+        .rank-1 { background: #ffd700; color: #fff; }
+        .rank-2 { background: #c0c0c0; color: #fff; }
+        .rank-3 { background: #cd7f32; color: #fff; }
+
+        /* 地图样式 */
+        #sim-map { height: 350px; background: #e9ecef; border-radius: 6px; position: relative; overflow: hidden; }
+        .map-dot { position: absolute; width: 12px; height: 12px; border-radius: 50%; transition: all 0.5s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .dot-elder { background: #6c757d; }
+        .dot-volunteer { background: #28a745; }
+        .dot-risk { background: #ffc107; animation: blink 1s infinite; }
+        .dot-emergency { background: #dc3545; width: 16px; height: 16px; animation: pulse 0.8s infinite; z-index: 10; }
+
+        /* 进度条 */
+        .progress-xs { height: 6px; margin-top: 5px; }
+
+        /* 日志控制台 */
+        #sys-log { height: 200px; background: #212529; color: #00ff00; font-family: monospace; font-size: 0.8rem; overflow-y: auto; padding: 10px; border-radius: 4px; }
+
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+        @keyframes blink { 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark px-3 shadow-sm">
+    <a class="navbar-brand" href="#"><i class="fas fa-network-wired me-2"></i>智慧社区养老互助系统  养老互助任务调度及多方联动机制模块<span class="badge bg-primary ms-2" style="font-size:0.6em">V2.0 演示版 制作人：162330318丁俊泽</span></a>
+    <div class="text-white">
+        仿真时间: <span id="sim-time" class="sim-clock">Loading...</span>
+        <span class="badge bg-warning text-dark ms-2">x600倍速</span>
+    </div>
+</nav>
+
+<div class="container-fluid mt-3">
+    <!-- 顶部状态栏 -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="dashboard-card p-3 d-flex align-items-center text-primary">
+                <i class="fas fa-users fa-2x me-3"></i>
+                <div>
+                    <h3 class="mb-0" id="stat-elders">0</h3>
+                    <small>社区老人 (模块1)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card p-3 d-flex align-items-center text-warning">
+                <i class="fas fa-clipboard-list fa-2x me-3"></i>
+                <div>
+                    <h3 class="mb-0" id="stat-tasks">0</h3>
+                    <small>待分配任务 (模块2)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card p-3 d-flex align-items-center text-success">
+                <i class="fas fa-hand-holding-heart fa-2x me-3"></i>
+                <div>
+                    <h3 class="mb-0" id="stat-credits">0</h3>
+                    <small>积分产生中 (模块3)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card p-3 d-flex align-items-center text-danger">
+                <i class="fas fa-ambulance fa-2x me-3"></i>
+                <div>
+                    <h3 class="mb-0" id="stat-emergencies">0</h3>
+                    <small>三级响应联动 (模块4)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- 左侧：情境感知与应急 -->
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span><i class="fas fa-map-marked me-2"></i>社区实时感知视图</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="triggerFall()">模拟跌倒</button>
+                </div>
+                <div class="card-body">
+                    <div id="sim-map">
+                        <!-- JS 绘制 -->
+                    </div>
+                    <div class="mt-2 d-flex justify-content-between small text-muted">
+                        <span><span class="badge bg-secondary rounded-circle" style="width:10px;height:10px;"> </span> 正常老人</span>
+                        <span><span class="badge bg-warning rounded-circle" style="width:10px;height:10px;"> </span> 风险老人</span>
+                        <span><span class="badge bg-danger rounded-circle" style="width:10px;height:10px;"> </span> 报警实时位置</span>
+                        <span><span class="badge bg-success rounded-circle" style="width:10px;height:10px;"> </span> 志愿者</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 应急响应列表 -->
+            <div class="dashboard-card" style="height: auto;">
+                <div class="card-header text-danger">
+                    <span><i class="fas fa-bell me-2"></i>应急救援联动 (Level 1-3)</span>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush" id="emergency-list">
+                        <li class="list-group-item text-center text-muted py-3">当前无紧急事件</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中间：任务调度 -->
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span><i class="fas fa-tasks me-2"></i>智能调度中心 (PPO算法)</span>
+                    <span class="module-tag">Module 2</span>
+                </div>
+                <div class="card-body p-0 overflow-auto" style="height: 500px;">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>类型/优先级</th>
+                                    <th>资源匹配</th>
+                                    <th>进度</th>
+                                </tr>
+                            </thead>
+                            <tbody id="task-table">
+                                <!-- JS填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：互助积分与日志 -->
+        <div class="col-lg-4">
+            <!-- 模块3：互助网络 -->
+            <div class="dashboard-card" style="height: 350px;">
+                <div class="card-header text-success">
+                    <span><i class="fas fa-coins me-2"></i>时间银行积分榜</span>
+                    <span class="module-tag">Module 3</span>
+                </div>
+                <div class="card-body p-0 overflow-auto">
+                    <ul class="list-group list-group-flush rank-list" id="volunteer-list">
+                        <!-- JS填充 -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 模块5：数据日志 -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span><i class="fas fa-terminal me-2"></i>系统决策日志</span>
+                    <span class="module-tag">Module 5</span>
+                </div>
+                <div class="card-body p-0 bg-dark">
+                    <div id="sys-log"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/dashboard.js"></script>
+</body>
+</html>
