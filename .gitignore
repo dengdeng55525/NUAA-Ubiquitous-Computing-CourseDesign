@@ -6,6 +6,9 @@
 *.[wW][bB][kK]
 ~$*
 
+# Original submission notes are excluded from publication.
+/README.txt
+
 # Local Python environments and caches.
 __pycache__/
 *.py[cod]

@@ -38,14 +38,13 @@
 │   └── .idea/                         # 原项目 IDE 配置
 ├── 智慧社区养老互助系统模拟平台设计.html  # 独立前端演示
 ├── 162330318-丁俊泽-普适计算课程设计.pdf  # 课程设计报告
-├── README.txt                         # 原始提交说明
 ├── README.md                          # 开源项目说明
 ├── requirements.txt                   # Python 运行依赖
 ├── .gitignore
 └── LICENSE
 ```
 
-本仓库保留原目录结构与非 Word 文件；Word 文档不纳入发布，并已加入 Git 忽略规则。
+本仓库保留原目录结构；Word 文档和原始提交说明 `README.txt` 不纳入发布，并已加入 Git 忽略规则。
 
 ## 运行环境
 
@@ -78,7 +77,6 @@ python app.py
 ### 课程报告与辅助文件
 
 - `162330318-丁俊泽-普适计算课程设计.pdf`：查看整体方案、模块设计与课程报告。
-- `README.txt`：保留原课程提交说明。
 - `create_file_tree.py`：打印目录树，使用前需将脚本中的 `path_input` 改为本机目录。
 
 ## License
